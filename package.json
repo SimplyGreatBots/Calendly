@@ -1,6 +1,6 @@
 {
   "name": "calendly",
-  "integrationName": "simplygreatcalendly/calendly",
+  "integrationName": "simplygreatbots/calendly",
   "scripts": {
     "type:check": "tsc --noEmit",
     "version": "bp --version",
