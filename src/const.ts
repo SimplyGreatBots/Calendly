@@ -83,7 +83,7 @@ const inviteesCounterSchema = z.object({
 })
 
 const locationSchema = z.object({
-  location: z.string().optional(),
+  location: z.string().nullish(),
   type: z.string().optional()
 })
 
