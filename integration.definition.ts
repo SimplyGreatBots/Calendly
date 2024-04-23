@@ -3,9 +3,11 @@ import { name, integrationName } from './package.json'
 
 export default new IntegrationDefinition({
   name: integrationName ?? name,
-  version: '0.2.0',
+  version: '0.2.3',
   icon: 'logo.svg',
   readme: 'hub.md',
+  title: 'Calendly',
+  description: 'This integration allows you to schedule events with Calendly.',
   channels: {},
   configuration: {
     schema: z.object({
