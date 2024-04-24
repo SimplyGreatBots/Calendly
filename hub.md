@@ -10,7 +10,7 @@ The `Schedule Calendly Event` action can be used to create event link. It requir
 `Conversation Id` is a unique identifier for each conversation. You can pass {{event.conversationId}} into this field to embed your id.
 
 ## Tutorial
-
+[![image](https://i.imgur.com/25HP9pw.png)](https://www.youtube.com/watch?v=kBHD4xdEyyw)
 
 #### Pre-requisites
 Receiving events from Calendly requires a `Standard` or higher subscription to have access to webhooks required for this integration.
