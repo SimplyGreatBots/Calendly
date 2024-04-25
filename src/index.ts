@@ -118,17 +118,7 @@ export default new botpress.Integration({
         const resource = response.data.resource
         const url = new URL(resource.booking_url)
 
-        // Create User
-        const { user } = await args.client.getOrCreateUser({
-          tags: {
-            [organizationIdTag]: organizationID,
-            [userIdTag]: userID
-          }
-        })
-
         url.searchParams.set('utm_source', `conversationId=${args.input.conversationId}`)
-        url.searchParams.set('utm_medium', `userId=${user.id}`)
-
         args.logger.forBot().debug('Event scheduled successfully', url.href)
 
         return { link: url.href }
@@ -151,24 +141,17 @@ export default new botpress.Integration({
     }
 
     const utmSource = parsedData.data.payload.tracking.utm_source
-    const utmMedium = parsedData.data.payload.tracking.utm_medium
 
-    if (utmSource && utmMedium) {
+    if (utmSource) {
       const conversationIDRegex = /conversationId=([\w]+)/
       const conversationIDMatch = utmSource.match(conversationIDRegex)
       const conversationID = conversationIDMatch ? conversationIDMatch[1] : null
 
-      const userIDRegex = /userId=([\w]+)/;
-      const userIDMatch = utmMedium.match(userIDRegex);
-      const userID = userIDMatch ? userIDMatch[1] : null;
-
-      if (conversationID && userID) {
-        const { user } = await client.getUser({ id: userID })
+      if (conversationID) {
 
         try {
           const event = await client.createEvent({
             type: 'calendlyEvent',
-            userId: user.id,
             conversationId: conversationID,
             payload: {
               conversationId: conversationID,
@@ -183,24 +166,6 @@ export default new botpress.Integration({
       else logger.forBot().warn('Could not find matcing conversation ID. Ensure you are passing event.conversationId into your Schedule Event Link.')
     } else {
       logger.forBot().warn('Could not find UTM source with Conversation ID.')
-    }
-  },
-  createUser: async ({ client, tags }) => {
-
-    const organizationID = tags['organizationIdTag']
-    const userID = tags['userIdTag']
-
-    const { user } = await client.getOrCreateUser({
-      tags: {
-        [organizationIdTag]: organizationID,
-        [userIdTag]: userID
-      },
-    })
-
-    return {
-      body: JSON.stringify({ user: { id: user.id } }),
-      headers: {},
-      statusCode: 200,
     }
   },
 })

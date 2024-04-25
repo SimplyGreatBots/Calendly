@@ -3,7 +3,7 @@ import { name, integrationName } from './package.json'
 
 export default new IntegrationDefinition({
   name: integrationName ?? name,
-  version: '0.2.4',
+  version: '0.2.5',
   icon: 'logo.svg',
   readme: 'hub.md',
   title: 'Calendly',
@@ -42,14 +42,4 @@ export default new IntegrationDefinition({
         .passthrough(),
     },
   },
-  user: {
-    tags: {
-      organizationIdTag: {},
-      userIdTag: {},
-    },
-    creation: {
-      enabled: true,
-      requiredTags: ['organizationIdTag', 'userIdTag']
-    },
-  }
 })
