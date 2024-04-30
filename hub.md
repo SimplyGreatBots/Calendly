@@ -9,8 +9,9 @@ The `Schedule Calendly Event` action can be used to create event link. It requir
 
 `Conversation Id` is a unique identifier for each conversation. You can pass {{event.conversationId}} into this field to embed your id. When receiving a Calendly Event you can use {{event.payload.conversation.id}} in the Advanced Options `Conversation ID` field of the `Calendly Event Trigger`. This will pull the event to the appropriate conversation.
 
-## Tutorial
-[![image](https://i.imgur.com/25HP9pw.png)](https://www.youtube.com/watch?v=kBHD4xdEyyw)
+You can see the full integration code at: https://github.com/SimplyGreatBots/Calendly
+## Tutorial Video
+[![image](https://i.imgur.com/42H34IF.png)](https://youtu.be/0jdsGJhoQfo)
 
 #### Pre-requisites
 Receiving events from Calendly requires a `Standard` or higher subscription to have access to webhooks required for this integration.
