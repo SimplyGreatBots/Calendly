@@ -7,7 +7,7 @@ A simply great integration to connect your Calendly account to your Botpress Bot
 When enabling the integration, a Webhook Subscription is created for your Calendly account using the provided `Access Token`. This webhook sends an event to the integration when an invitee signs up for one of your events.
 The `Schedule Calendly Event` action can be used to create event link. It requires a Conversation Id and Calendly Event URL. It uses the URL to match an event from your Calendly and creates a new link with your Conversation Id embeded inside. This Id is then used to trigger the `Calendly Event`	inside the conversation so that your bot can respond to the event.
 
-`Conversation Id` is a unique identifier for each conversation. You can pass {{event.conversationId}} into this field to embed your id.
+`Conversation Id` is a unique identifier for each conversation. You can pass {{event.conversationId}} into this field to embed your id. When receiving a Calendly Event you can use {{event.payload.conversation.id}} in the Advanced Options `Conversation ID` field of the `Calendly Event Trigger`. This will pull the event to the appropriate conversation.
 
 ## Tutorial
 [![image](https://i.imgur.com/25HP9pw.png)](https://www.youtube.com/watch?v=kBHD4xdEyyw)

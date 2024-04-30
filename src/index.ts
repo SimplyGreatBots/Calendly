@@ -1,7 +1,7 @@
 import * as botpress from '.botpress'
 import axios from 'axios'
 import { getCurrentUserAPICall, getEventTypesAPICall, findEventTypeUriBySchedulingUrl, getWebhookSubscriptionsAPICall, findWebhookSubscriptionByCallbackUrl } from './client'
-import { calendlyWebhookEventSchema, organizationIdTag, userIdTag } from './const'
+import { calendlyWebhookEventSchema } from './const'
 
 type scheduleEventOutput = botpress.actions.scheduleEvent.output.Output
 
@@ -154,7 +154,9 @@ export default new botpress.Integration({
             type: 'calendlyEvent',
             conversationId: conversationID,
             payload: {
-              conversationId: conversationID,
+              conversation: {
+                id: conversationID
+              },
               data: parsedData.data.payload
             },
           })

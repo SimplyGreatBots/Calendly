@@ -36,10 +36,11 @@ export default new IntegrationDefinition({
       title: 'Calendly Event',
       description: 'This event is received after an invitee schedules with the Calendly link.',
       schema: z.object({
-        conversationId: z.string().describe('ID of the conversation'),
+        conversation: z.object({
+          id: z.string().describe('ID of the conversation'),
+        }),
         data: z.record(z.any()),
-      })
-        .passthrough(),
+      }).passthrough(),
     },
   },
 })
