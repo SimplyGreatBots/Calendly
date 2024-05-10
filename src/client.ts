@@ -1,6 +1,7 @@
 import * as botpress from '.botpress'
+import * as bpclient from "@botpress/client"
 import axios from 'axios'
-import { CalendlyData, WebhookSubscriptionData, WebhookSubscription } from './const'
+import { CalendlyData, WebhookSubscriptionData, WebhookSubscription, calendlyErrorSchema } from './const'
 
 type IntegrationLogger = botpress.Client['client']['logger']
 
@@ -26,10 +27,32 @@ export const getCurrentUserAPICall = async (accessToken: string, logger: Integra
     userID = response.data.resource.uri
 
   } catch (error) {
-    logger.forBot().error('Error getting current user:', JSON.stringify(error))
-    return { organizationID, userID }
+    if (axios.isAxiosError(error)) {
+      // Specific handling for Axios errors
+      const statusCode = error.response ? error.response.status : 'No Status Code';
+      const statusText = error.response ? error.response.statusText : 'No Status Text';
+      const detailedMessage = `Axios error - ${statusCode} ${statusText}: ${error.message}`;
+    
+      // Log the response body to see the actual error data structure
+      if (error.response) {
+        const result = calendlyErrorSchema.safeParse(error.response.data);
+        if (result.success) {
+          logger.forBot().error(`Error getting Calendly user: ${result.data.message}`);
+          throw new bpclient.RuntimeError(result.data.message);
+        } else {
+          logger.forBot().error(`Error data parsing failure: ${JSON.stringify(result.error, null, 2)}`);
+        }
+      }
+  
+      logger.forBot().error(detailedMessage);
+      throw new bpclient.RuntimeError(detailedMessage);
+    } else {
+      // Handle non-Axios errors
+      const errorMessage = `Unexpected error type encountered while getting Calendly user: ${JSON.stringify(error, null, 2)}`;
+      logger.forBot().error(errorMessage);
+      throw new bpclient.RuntimeError(errorMessage);
+    }
   }
-
   return { organizationID, userID }
 }
 
@@ -55,9 +78,31 @@ export const getEventTypesAPICall = async (userID: string, accessToken: string, 
     return response.data
 
   } catch (error) {
-    // Log the error
-    logger.forBot().error('Error getting event types:', JSON.stringify(error))
-    return null
+    if (axios.isAxiosError(error)) {
+      // Specific handling for Axios errors
+      const statusCode = error.response ? error.response.status : 'No Status Code';
+      const statusText = error.response ? error.response.statusText : 'No Status Text';
+      const detailedMessage = `Axios error - ${statusCode} ${statusText}: ${error.message}`;
+    
+      // Log the response body to see the actual error data structure
+      if (error.response) {
+        const result = calendlyErrorSchema.safeParse(error.response.data);
+        if (result.success) {
+          logger.forBot().error(`Error getting Calendly event types: ${result.data.message}`);
+          throw new bpclient.RuntimeError(result.data.message);
+        } else {
+          logger.forBot().error(`Error data parsing failure: ${JSON.stringify(result.error, null, 2)}`);
+        }
+      }
+  
+      logger.forBot().error(detailedMessage);
+      throw new bpclient.RuntimeError(detailedMessage);
+    } else {
+      // Handle non-Axios errors
+      const errorMessage = `Unexpected error type encountered while getting Calendly event types: ${JSON.stringify(error, null, 2)}`;
+      logger.forBot().error(errorMessage);
+      throw new bpclient.RuntimeError(errorMessage);
+    }
   }
 }
 
@@ -87,14 +132,38 @@ export async function getWebhookSubscriptionsAPICall(organizationID: string, use
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`
     }
-  };
+  }
 
   try {
-    const response = await axios.request(options);
+    const response = await axios.request(options)
     webhooks = response.data
 
   } catch (error) {
-    logger.forBot().error(`Error fetching webhook subscriptions: ${error}`);
+    if (axios.isAxiosError(error)) {
+      // Specific handling for Axios errors
+      const statusCode = error.response ? error.response.status : 'No Status Code';
+      const statusText = error.response ? error.response.statusText : 'No Status Text';
+      const detailedMessage = `Axios error - ${statusCode} ${statusText}: ${error.message}`;
+    
+      // Log the response body to see the actual error data structure
+      if (error.response) {
+        const result = calendlyErrorSchema.safeParse(error.response.data);
+        if (result.success) {
+          logger.forBot().error(`Error getting Calendly webhooks: ${result.data.message}`);
+          throw new bpclient.RuntimeError(result.data.message);
+        } else {
+          logger.forBot().error(`Error data parsing failure: ${JSON.stringify(result.error, null, 2)}`);
+        }
+      }
+  
+      logger.forBot().error(detailedMessage);
+      throw new bpclient.RuntimeError(detailedMessage);
+    } else {
+      // Handle non-Axios errors
+      const errorMessage = `Unexpected error type encountered while getting Calendly webhooks: ${JSON.stringify(error, null, 2)}`;
+      logger.forBot().error(errorMessage);
+      throw new bpclient.RuntimeError(errorMessage);
+    }
   }
 
   return webhooks
@@ -104,5 +173,5 @@ export function findWebhookSubscriptionByCallbackUrl(
   collection: WebhookSubscription[],
   callbackUrl: string
 ): WebhookSubscription | null {
-  return collection.find(subscription => subscription.callback_url === callbackUrl) || null;
+  return collection.find(subscription => subscription.callback_url === callbackUrl) || null
 }

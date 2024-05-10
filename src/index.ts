@@ -1,7 +1,8 @@
 import * as botpress from '.botpress'
+import * as bpclient from "@botpress/client"
 import axios from 'axios'
 import { getCurrentUserAPICall, getEventTypesAPICall, findEventTypeUriBySchedulingUrl, getWebhookSubscriptionsAPICall, findWebhookSubscriptionByCallbackUrl } from './client'
-import { calendlyWebhookEventSchema, organizationIdTag, userIdTag } from './const'
+import { calendlyWebhookEventSchema, calendlyErrorSchema } from './const'
 
 type scheduleEventOutput = botpress.actions.scheduleEvent.output.Output
 
@@ -39,10 +40,31 @@ export default new botpress.Integration({
     }
 
     try {
-      const webhookResponse = await axios.request(webhookOptions)
-      logger.forBot().info(`Webhook subscription created successfully: ${JSON.stringify(webhookResponse.data)}`)
+      const webhookResponse = await axios.request(webhookOptions);
+      logger.forBot().info(`Webhook subscription created successfully: ${JSON.stringify(webhookResponse.data)}`);
     } catch (error) {
-      logger.forBot().error(`Error creating Calendly webhook subscription: ${JSON.stringify(error)}`)
+      if (axios.isAxiosError(error)) {
+        // Specific handling for Axios errors
+        const statusCode = error.response ? error.response.status : 'No Status Code';
+        const statusText = error.response ? error.response.statusText : 'No Status Text';
+        const detailedMessage = `Axios error - ${statusCode} ${statusText}: ${error.message}`;
+    
+        logger.forBot().error(detailedMessage);
+        throw new bpclient.RuntimeError(detailedMessage);
+      } else {
+        // Handle errors expected to match the Calendly error schema
+        const result = calendlyErrorSchema.safeParse(error);
+    
+        if (result.success) {
+          logger.forBot().error(`Error creating Calendly webhook subscription: ${result.data.message}`);
+          throw new bpclient.RuntimeError(result.data.message);
+        } else {
+          // Handling unexpected error types
+          const errorMessage = `Unexpected error encountered while creating Calendly webhook subscription: ${JSON.stringify(error, null, 2)}`;
+          logger.forBot().error(errorMessage);
+          throw new bpclient.RuntimeError(errorMessage);
+        }
+      }
     }
   },
   unregister: async ({ ctx, logger, webhookUrl }) => {
