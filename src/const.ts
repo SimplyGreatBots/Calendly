@@ -174,3 +174,12 @@ export interface WebhookSubscriptionData {
   collection: WebhookSubscription[];
   pagination: Pagination;
 }
+
+export const calendlyErrorSchema = z.object({
+  title: z.string(),
+  message: z.string(),
+  details: z.array(z.object({
+    parameter: z.string().optional(),
+    message: z.string()
+  })).optional()
+}).passthrough()
