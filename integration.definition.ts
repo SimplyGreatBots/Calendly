@@ -3,7 +3,7 @@ import { name, integrationName } from './package.json'
 
 export default new IntegrationDefinition({
   name: integrationName ?? name,
-  version: '1.0.2',
+  version: '1.0.3',
   icon: 'logo.svg',
   readme: 'hub.md',
   title: 'Calendly',

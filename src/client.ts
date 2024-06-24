@@ -29,18 +29,18 @@ export const getCurrentUserAPICall = async (accessToken: string, logger: Integra
   } catch (error) {
     if (axios.isAxiosError(error)) {
       // Specific handling for Axios errors
-      const statusCode = error.response ? error.response.status : 'No Status Code';
-      const statusText = error.response ? error.response.statusText : 'No Status Text';
-      const detailedMessage = `Axios error - ${statusCode} ${statusText}: ${error.message}`;
+      const statusCode = error.response ? error.response.status : 'No Status Code'
+      const statusText = error.response ? error.response.statusText : 'No Status Text'
+      const detailedMessage = `Axios error - ${statusCode} ${statusText}: ${error.message}`
     
       // Log the response body to see the actual error data structure
       if (error.response) {
-        const result = calendlyErrorSchema.safeParse(error.response.data);
+        const result = errorSchemaScheduleEvent.safeParse(error.response.data)
         if (result.success) {
-          logger.forBot().error(`Error getting Calendly user: ${result.data.message}`);
-          throw new bpclient.RuntimeError(result.data.message);
+          logger.forBot().error(`Error getting Calendly user: ${result.data.message}`)
+          throw new bpclient.RuntimeError(result.data.message)
         } else {
-          logger.forBot().error(`Error data parsing failure: ${JSON.stringify(result.error, null, 2)}`);
+          logger.forBot().error(`Error data parsing failure: ${JSON.stringify(result.error, null, 2)}`)
         }
       }
   
@@ -48,9 +48,9 @@ export const getCurrentUserAPICall = async (accessToken: string, logger: Integra
       throw new bpclient.RuntimeError(detailedMessage);
     } else {
       // Handle non-Axios errors
-      const errorMessage = `Unexpected error type encountered while getting Calendly user: ${JSON.stringify(error, null, 2)}`;
+      const errorMessage = `Unexpected error type encountered while getting Calendly user: ${JSON.stringify(error, null, 2)}`
       logger.forBot().error(errorMessage);
-      throw new bpclient.RuntimeError(errorMessage);
+      throw new bpclient.RuntimeError(errorMessage)
     }
   }
   return { organizationID, userID }

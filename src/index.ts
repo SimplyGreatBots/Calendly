@@ -1,5 +1,6 @@
 import * as botpress from '.botpress'
 import * as bpclient from "@botpress/client"
+import * as sdk from '@botpress/sdk'
 import axios from 'axios'
 import { getCurrentUserAPICall, getEventTypesAPICall, findEventTypeUriBySchedulingUrl, getWebhookSubscriptionsAPICall, findWebhookSubscriptionByCallbackUrl } from './client'
 import { calendlyWebhookEventSchema, calendlyErrorSchema } from './const'
@@ -42,31 +43,31 @@ export default new botpress.Integration({
     try {
       const webhookResponse = await axios.request(webhookOptions);
       logger.forBot().info(`Webhook subscription created successfully: ${JSON.stringify(webhookResponse.data)}`);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        // Specific handling for Axios errors
-        const statusCode = error.response ? error.response.status : 'No Status Code';
-        const statusText = error.response ? error.response.statusText : 'No Status Text';
-        const detailedMessage = `Axios error - ${statusCode} ${statusText}: ${error.message}`;
-    
-        logger.forBot().error(detailedMessage);
-        throw new bpclient.RuntimeError(detailedMessage);
-      } else {
-        // Handle errors expected to match the Calendly error schema
-        const result = calendlyErrorSchema.safeParse(error);
-    
+    } catch (error: any) {
+        const result = calendlyErrorSchema.safeParse(error)
         if (result.success) {
           logger.forBot().error(`Error creating Calendly webhook subscription: ${result.data.message}`);
           throw new bpclient.RuntimeError(result.data.message);
         } else {
+          if (axios.isAxiosError(error)) {
+            const statusCode = error.response ? error.response.status : 'No Status Code'
+            const statusText = error.response ? error.response.statusText : 'No Status Text'
+            const detailMessage = error.response && error.response.data ? error.response.data.message : ''
+            const detailedErrorMessage = `Axios error - ${statusCode} ${statusText}: ${error.message}. Details: ${detailMessage}`
+
+            logger.forBot().error(error)
+            logger.forBot().error(detailedErrorMessage);
+            throw new bpclient.RuntimeError(detailedErrorMessage)
+          } 
+          else {
           // Handling unexpected error types
           const errorMessage = `Unexpected error encountered while creating Calendly webhook subscription: ${JSON.stringify(error, null, 2)}`;
           logger.forBot().error(errorMessage);
           throw new bpclient.RuntimeError(errorMessage);
+          }
         }
       }
-    }
-  },
+    },
   unregister: async ({ ctx, logger, webhookUrl }) => {
     logger.forBot().info(`Unsubscribing from Calendly webhook`)
 
@@ -145,8 +146,24 @@ export default new botpress.Integration({
 
         return { link: url.href }
 
-      } catch (error) {
-        args.logger.forBot().error('Error scheduling event:', JSON.stringify(error))
+      } catch (error: any) {
+        if (axios.isAxiosError(error) && error.response) {
+          try {
+            const parsedError = calendlyErrorSchema.parse(error.response.data)
+            if (parsedError.details) {
+              parsedError.details.forEach((detail) => {
+                args.logger.forBot().error(`Detail: ${detail.parameter} - ${detail.message}`)
+                throw new sdk.RuntimeError(`Detail: ${detail.parameter} - ${detail.message}`)
+              })
+            }
+          } catch (validationError) {
+            args.logger.forBot().error('Error response does not match expected format:', JSON.stringify(error.response.data))
+            throw new sdk.RuntimeError(`Error response does not match expected format: ${error.response.data}`)
+          }
+        } else {
+          args.logger.forBot().error('Error scheduling event:', error.message)
+          throw new sdk.RuntimeError(`Error scheduling event: ${error.message}`)
+        }
         return { link: '' }
       }
     }
